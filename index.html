@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Speech Detection</title>
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <div class="words" contenteditable></div>
+
+    <script>
+      // Checks if the SpeechRecognition Web API is available in the browser.
+      // If not, it uses webkitSpeechRecognition, which is the Chrome-specific version.
+      window.SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      // Creates a new instance of SpeechRecognition.
+      const recognition = new SpeechRecognition();
+      // Enables interim results, meaning speech results will be shown live while the user is still speaking (instead of waiting for them to finish).
+      recognition.interimResults = true;
+
+      let p = document.createElement("p");
+      const words = document.querySelector(".words");
+      words.appendChild(p);
+
+      // Listens for result events (when the browser recognizes speech).
+      recognition.addEventListener("result", (e) => {
+        // console.log(e.results); // this is not an array
+        // SpeechRecognitionResultList {0: SpeechRecognitionResult{...}, 1: SpeechRecognitionResult{...}, ....}
+
+        // Converts e.results into an array (e.results is not a normal array).
+        const transcript = Array.from(e.results)
+          // Extracts the first result of each SpeechRecognitionResult.
+          .map((result) => result[0])
+          // Retrieves the spoken text (transcript property).
+          .map((result) => result.transcript)
+          // Joins everything into a single string.
+          .join("");
+
+        // Example Output:
+        //  e.results = [
+        //   {0: {transcript: "Hello"}},
+        //   {0: {transcript: "world"}}
+        // ];
+        // transcript = "Hello world";
+
+        // Updates the <p> tag’s text to display the recognized speech.
+        p.textContent = transcript;
+
+        // If the speech is finalized (isFinal === true), it creates a new <p> to start a fresh line for the next speech segment.
+        if (e.results[0].isFinal) {
+          p = document.createElement("p");
+          words.appendChild(p);
+        }
+      });
+
+      // Restarts recognition when it stops, ensuring continuous speech detection. (Without this, the recognition would stop after one sentence.)
+      recognition.addEventListener("end", recognition.start);
+      // Starts listening for speech input.
+      recognition.start();
+    </script>
+
+    <style>
+      html {
+        font-size: 10px;
+      }
+
+      body {
+        background: #ffc600;
+        font-family: "helvetica neue";
+        font-weight: 200;
+        font-size: 20px;
+      }
+
+      .words {
+        max-width: 500px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.1);
+        padding: 1rem 2rem 1rem 5rem;
+        background: -webkit-gradient(
+            linear,
+            0 0,
+            0 100%,
+            from(#d9eaf3),
+            color-stop(4%, #fff)
+          )
+          0 4px;
+        background-size: 100% 3rem;
+        position: relative;
+        line-height: 3rem;
+      }
+
+      p {
+        margin: 0 0 3rem;
+      }
+
+      .words:before {
+        content: "";
+        position: absolute;
+        width: 4px;
+        top: 0;
+        left: 30px;
+        bottom: 0;
+        border: 1px solid;
+        border-color: transparent #efe4e4;
+      }
+    </style>
+  </body>
+</html>
